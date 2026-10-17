@@ -1,8 +1,8 @@
 """init
 
-Revision ID: 6cfafbb98f0c
+Revision ID: 95effe775cfe
 Revises:
-Create Date: 2026-10-16 22:41:49.739550
+Create Date: 2026-10-17 16:56:37.628168
 
 """
 
@@ -13,7 +13,7 @@ import sqlalchemy as sa
 from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
-revision: str = "6cfafbb98f0c"
+revision: str = "95effe775cfe"
 down_revision: Union[str, Sequence[str], None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -26,9 +26,22 @@ def upgrade() -> None:
         "outboxes",
         sa.Column("event_type", sa.String(length=50), nullable=False),
         sa.Column("payload", postgresql.JSONB(astext_type=sa.Text()), nullable=False),
-        sa.Column("status", sa.String(length=30), nullable=False),
+        sa.Column(
+            "status",
+            sa.Enum(
+                "PENDING",
+                "PROCESSING",
+                "SENT",
+                "FAILED",
+                "EXPIRED",
+                name="status",
+            ),
+            nullable=False,
+        ),
         sa.Column("attempts", sa.Integer(), nullable=False),
         sa.Column("error_message", sa.String(length=1000), nullable=True),
+        sa.Column("processed_at", sa.DateTime(timezone=True), nullable=True),
+        sa.Column("locked_until", sa.DateTime(timezone=True), nullable=True),
         sa.Column(
             "id",
             sa.UUID(),
@@ -42,6 +55,20 @@ def upgrade() -> None:
             nullable=False,
         ),
         sa.PrimaryKeyConstraint("id", name=op.f("pk_outboxes")),
+    )
+    op.create_index(
+        "ix_outbox_locked_until",
+        "outboxes",
+        ["locked_until"],
+        unique=False,
+        postgresql_where=sa.text("status = 'processing'"),
+    )
+    op.create_index(
+        "ix_outbox_pending_created",
+        "outboxes",
+        ["created_at"],
+        unique=False,
+        postgresql_where=sa.text("status = 'pending'"),
     )
     op.create_index(op.f("ix_outboxes_id"), "outboxes", ["id"], unique=False)
     op.create_index(op.f("ix_outboxes_status"), "outboxes", ["status"], unique=False)
@@ -98,5 +125,15 @@ def downgrade() -> None:
     op.drop_table("payments")
     op.drop_index(op.f("ix_outboxes_status"), table_name="outboxes")
     op.drop_index(op.f("ix_outboxes_id"), table_name="outboxes")
+    op.drop_index(
+        "ix_outbox_pending_created",
+        table_name="outboxes",
+        postgresql_where=sa.text("status = 'pending'"),
+    )
+    op.drop_index(
+        "ix_outbox_locked_until",
+        table_name="outboxes",
+        postgresql_where=sa.text("status = 'processing'"),
+    )
     op.drop_table("outboxes")
     # ### end Alembic commands ###
