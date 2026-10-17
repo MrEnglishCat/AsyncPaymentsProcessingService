@@ -1,8 +1,8 @@
 """init
 
-Revision ID: 388641d59a44
+Revision ID: 6cfafbb98f0c
 Revises:
-Create Date: 2026-10-16 04:00:43.803579
+Create Date: 2026-10-16 22:41:49.739550
 
 """
 
@@ -13,7 +13,7 @@ import sqlalchemy as sa
 from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
-revision: str = "388641d59a44"
+revision: str = "6cfafbb98f0c"
 down_revision: Union[str, Sequence[str], None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -76,7 +76,7 @@ def upgrade() -> None:
             nullable=False,
         ),
         sa.CheckConstraint(
-            "amount > 0", name=op.f("ck_payments_ck_payment_amount_positive")
+            "amount >= 0", name=op.f("ck_payments_ck_payment_amount_positive")
         ),
         sa.PrimaryKeyConstraint("id", name=op.f("pk_payments")),
     )

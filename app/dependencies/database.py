@@ -21,6 +21,8 @@ class DatabaseHelper:
             url=url,
             echo=echo,
             echo_pool=echo_pool,
+            pool_size=pool_size,
+            max_overflow=max_overflow,
         )
 
         self.async_session_maker: async_sessionmaker[AsyncSession] = async_sessionmaker(
@@ -29,8 +31,6 @@ class DatabaseHelper:
             expire_on_commit=settings.db.expire_on_commit,
             autocommit=settings.db.autocommit,
             autoflush=settings.db.autoflush,
-            pool_size=pool_size,
-            max_over_flow=max_overflow,
         )
 
     async def dispose(self) -> None:
@@ -42,7 +42,8 @@ class DatabaseHelper:
 
 
 db_helper = DatabaseHelper(
-    url=settings.db.DB_URL,
+    # url=settings.db.DB_URL,  # DEVELOPMENT  заменить БД на постгрес.
+    url=settings.db.TEST_DB_URL,
     echo=settings.db.echo,
     echo_pool=settings.db.echo_pool,
     pool_size=settings.db.pool_size,

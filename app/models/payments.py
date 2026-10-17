@@ -1,6 +1,6 @@
 from datetime import datetime
 from decimal import Decimal
-from uuid import UUID
+from uuid import UUID, uuid4
 from sqlalchemy import (
     CheckConstraint,
     DateTime,
@@ -22,7 +22,9 @@ class Payment(
     TimestampMixin,
 ):
     __tablename__ = "payments"
-    __table_args__ = (CheckConstraint("amount > 0", name="ck_payment_amount_positive"),)
+    __table_args__ = (
+        CheckConstraint("amount >= 0", name="ck_payment_amount_positive"),
+    )
 
     amount: Mapped[Decimal] = mapped_column(Numeric(19, 4))
     currency: Mapped[CurrencyEnum] = mapped_column(
@@ -48,6 +50,6 @@ class Payment(
         DateTime(timezone=True),
     )
     idempotency_key: Mapped[UUID] = mapped_column(
-        SA_UUID(as_uuid=True), unique=True, index=True
+        SA_UUID(as_uuid=True), default=uuid4, unique=True, index=True
     )
     webhook_url: Mapped[str] = mapped_column(String(500))
