@@ -1,8 +1,7 @@
 import logging
 from uuid import UUID
-from typing import Type
 
-from fastapi import status, HTTPException
+from fastapi import status
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 from ..schemas import (
@@ -10,6 +9,7 @@ from ..schemas import (
     PaymentReadSchema,
     PaymentCreateResponseSchema,
 )
+from ..exceptions.exceptions import ConflictItemsException, AppBaseException
 from ..repository import PaymentRepository
 
 logger = logging.getLogger(__name__)
@@ -52,16 +52,17 @@ class PaymentService:
                     logger.warning(
                         f"The Idempotency-Key has already been used with different payment data.\n\tInput payment {payment}"
                     )
-                    raise HTTPException(
+                    raise ConflictItemsException(
                         status_code=status.HTTP_409_CONFLICT,
                         detail="The Idempotency-Key has already been used with different payment data.",
                     )
 
                 return PaymentCreateResponseSchema.model_validate(existing_payment)
-            logger.warning(
+
+            logger.error(
                 f"Unexpected error while creating a payment.\n\tInput payment {payment}\n\tExc:{str(e)}"
             )
-            raise HTTPException(
+            raise AppBaseException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 detail="Unexpected error while creating a payment",
             )
