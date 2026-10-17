@@ -10,15 +10,19 @@ from ..schemas import (
     PaymentCreateResponseSchema,
 )
 from ..exceptions.exceptions import ConflictItemsException, AppBaseException
-from ..repository import PaymentRepository
+from ..repository import PaymentRepository, OutboxRepository
+from ..enums.outbox import EventTypeEnum
 
 logger = logging.getLogger(__name__)
 
 
 class PaymentService:
 
-    def __init__(self, repository: PaymentRepository):
+    def __init__(
+        self, repository: PaymentRepository, outbox_repository: OutboxRepository
+    ):
         self._repository: PaymentRepository = repository
+        self._outbox_repository: OutboxRepository = outbox_repository
 
     async def get_all(self, session: AsyncSession) -> list[PaymentReadSchema]:
         return await self._repository.get_all(session)
@@ -36,6 +40,17 @@ class PaymentService:
     ) -> PaymentCreateResponseSchema:
         try:
             new_payment = await self._repository.create(session, payment)
+            await self._outbox_repository.create(
+                session=session,
+                event_type=EventTypeEnum.PAYMENT_CREATED,
+                payload={
+                    "payment_id": str(new_payment.id),
+                    "amount": str(new_payment.amount),
+                    "currency": new_payment.currency,
+                    "status": new_payment.status,
+                    "webhook_url": new_payment.webhook_url,
+                },
+            )
             await session.commit()
             return PaymentCreateResponseSchema.model_validate(new_payment)
         except IntegrityError as e:

@@ -1,3 +1,3 @@
 from .payment import *
-from .outbox import OutboxStatus
+from .outbox import OutboxStatusEnum
 from .service import ServiceTypeEnum

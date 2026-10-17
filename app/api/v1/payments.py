@@ -26,6 +26,7 @@ payments_router = APIRouter(prefix=settings.api.v1.payments)
     "/",
     response_model=BaseResponse[PaymentCreateResponseSchema],
     status_code=status.HTTP_202_ACCEPTED,
+    summary="Create payment",
 )
 async def create_payment(
     payment: PaymentCreateSchema = Depends(generate_body),
@@ -49,6 +50,7 @@ async def create_payment(
     "/",
     response_model=BaseResponse[list[PaymentReadSchema]],
     status_code=status.HTTP_200_OK,
+    summary="Get all payments",
 )
 async def get_all_payments(
     session: AsyncSession = Depends(db_helper.session_getter),
@@ -62,8 +64,9 @@ async def get_all_payments(
     "/{payment_id}",
     response_model=BaseResponse[PaymentReadSchema],
     status_code=status.HTTP_200_OK,
+    summary="Get one payment",
 )
-async def get_payment(
+async def get_payment_by_id(
     payment_id: UUID = Path(description="Unique payment identifier"),
     session: AsyncSession = Depends(db_helper.session_getter),
     service: PaymentService = Depends(get_payment_service),

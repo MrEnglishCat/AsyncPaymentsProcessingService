@@ -3,10 +3,11 @@ from uuid import uuid4
 
 from fastapi import Depends
 
-from ...repository import PaymentRepository
+from ...repository import PaymentRepository, OutboxRepository
 from ...services import PaymentService
 from ...schemas import PaymentCreateSchema, PaymentPayloadSchema
 from ..base import get_header_dependency
+from .outbox import get_outbox_repository
 
 
 def get_payment_repository() -> PaymentRepository:
@@ -15,8 +16,12 @@ def get_payment_repository() -> PaymentRepository:
 
 def get_payment_service(
     repository: PaymentRepository = Depends(get_payment_repository),
+    outbox_repository: OutboxRepository = Depends(get_outbox_repository),
 ) -> PaymentService:
-    return PaymentService(repository=repository)
+    return PaymentService(
+        repository=repository,
+        outbox_repository=outbox_repository,
+    )
 
 
 def generate_body(
