@@ -1,2 +1,2 @@
-from .payment import *
-from .outbox import *
+from .payment import PaymentService
+from .outbox import OutboxService

@@ -68,6 +68,7 @@ class ProjectSettings(BaseSettings):
 
     MODE: str
     APP_AUTH_KEY: str
+    SECRET_KEY: str
 
 
 settings = ProjectSettings()

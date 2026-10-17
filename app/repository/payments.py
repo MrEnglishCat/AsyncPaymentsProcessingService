@@ -14,7 +14,7 @@ class PaymentRepository(BaseRepository[Payment]):
     async def create(self, session: AsyncSession, payment: PaymentCreateSchema) -> UUID:
         new_payment = self.model(**payment.model_dump())
         session.add(new_payment)
-        session.refresh(new_payment)
+        await session.flush()
         return new_payment
 
     async def get_by_idempotency_key(
