@@ -1,10 +1,8 @@
-from typing import Annotated
-from uuid import UUID, uuid7
+from uuid import UUID
 
-from fastapi import APIRouter, Depends, status, Path, Header
+from fastapi import APIRouter, Depends, status, Path
 from fastapi.responses import JSONResponse
 from sqlalchemy.ext.asyncio import AsyncSession
-
 
 from ...exceptions.exceptions import NotFoundItemException
 from ...enums import PaymentStatusEnum

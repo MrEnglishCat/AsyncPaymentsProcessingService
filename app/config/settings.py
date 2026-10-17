@@ -67,7 +67,7 @@ class ProjectSettings(BaseSettings):
     run: RunConfig = RunConfig()
 
     MODE: str
-    APP_AUTH_KEY: str
+    APP_API_KEY: str
     SECRET_KEY: str
 
 
