@@ -7,7 +7,6 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from .base import BaseRepository
 from ..models import Outbox
 from ..enums.outbox import EventTypeEnum, OutboxStatusEnum
-from ..config.settings import settings
 
 
 class OutboxRepository(BaseRepository[Outbox]):

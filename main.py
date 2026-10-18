@@ -7,7 +7,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from starlette.middleware.sessions import SessionMiddleware
 
-from app.api.main_router import api_router
+from app.api.api_router import api_router
 from app.config.settings import settings
 from app.dependencies.database import db_helper
 from app.exceptions.handlers import setup_exception_handlers

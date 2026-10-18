@@ -7,7 +7,6 @@ class BaseAlchemyModel(DeclarativeBase):
 
     max_print_columns: int | None = 4
     explicit_print_columns: tuple[str, ...] = tuple()
-    tablename_prefix: str = "apps"
 
     metadata = MetaData(naming_convention=settings.db.naming_convention)
 

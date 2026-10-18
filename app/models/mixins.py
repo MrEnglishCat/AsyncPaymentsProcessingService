@@ -28,30 +28,3 @@ class TimestampMixin:
             server_default=text("now()"),
             nullable=False,
         )
-
-    # @declared_attr
-    # def updated_at(cls) -> Mapped[datetime]:
-    #     return mapped_column(
-    #         DateTime(timezone=True),
-    #         default=lambda: datetime.now(UTC),
-    #         onupdate=lambda: datetime.now(UTC),
-    #         server_default=text("now()"),
-    #         nullable=False,
-    #     )
-
-
-# class SoftDeleteMixin:
-
-#     @declared_attr
-#     def is_deleted(cls) -> Mapped[bool]:
-#         return mapped_column(
-#             Boolean,
-#             default=False,
-#             server_default=text("false"),
-#             nullable=False,
-#             index=True,
-#         )
-
-#     @declared_attr
-#     def deleted_at(cls) -> Mapped[datetime | None]:
-#         return mapped_column(DateTime(timezone=True), nullable=True)
