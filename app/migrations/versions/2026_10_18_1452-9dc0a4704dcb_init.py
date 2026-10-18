@@ -1,8 +1,8 @@
 """init
 
-Revision ID: 95effe775cfe
+Revision ID: 9dc0a4704dcb
 Revises:
-Create Date: 2026-10-17 16:56:37.628168
+Create Date: 2026-10-18 14:52:03.209955
 
 """
 
@@ -13,7 +13,7 @@ import sqlalchemy as sa
 from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
-revision: str = "95effe775cfe"
+revision: str = "9dc0a4704dcb"
 down_revision: Union[str, Sequence[str], None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -35,6 +35,8 @@ def upgrade() -> None:
                 "FAILED",
                 "EXPIRED",
                 name="status",
+                native_enum=False,
+                length=255,
             ),
             nullable=False,
         ),
@@ -42,12 +44,7 @@ def upgrade() -> None:
         sa.Column("error_message", sa.String(length=1000), nullable=True),
         sa.Column("processed_at", sa.DateTime(timezone=True), nullable=True),
         sa.Column("locked_until", sa.DateTime(timezone=True), nullable=True),
-        sa.Column(
-            "id",
-            sa.UUID(),
-            server_default=sa.text("(uuidv7())"),
-            nullable=False,
-        ),
+        sa.Column("id", sa.UUID(), nullable=False),
         sa.Column(
             "created_at",
             sa.DateTime(timezone=True),
@@ -77,25 +74,34 @@ def upgrade() -> None:
         sa.Column("amount", sa.Numeric(precision=19, scale=4), nullable=False),
         sa.Column(
             "currency",
-            sa.Enum("RUB", "USD", "EUR", name="currency"),
+            sa.Enum(
+                "RUB",
+                "USD",
+                "EUR",
+                name="currency",
+                native_enum=False,
+                length=255,
+            ),
             nullable=False,
         ),
         sa.Column("description", sa.String(length=500), nullable=False),
         sa.Column("meta", postgresql.JSONB(astext_type=sa.Text()), nullable=False),
         sa.Column(
             "status",
-            sa.Enum("PENDING", "SUCCEEDED", "FAILED", name="payments"),
+            sa.Enum(
+                "PENDING",
+                "SUCCEEDED",
+                "FAILED",
+                name="payments",
+                native_enum=False,
+                length=255,
+            ),
             nullable=False,
         ),
         sa.Column("processed_at", sa.DateTime(timezone=True), nullable=True),
         sa.Column("idempotency_key", sa.UUID(), nullable=False),
         sa.Column("webhook_url", sa.String(length=500), nullable=False),
-        sa.Column(
-            "id",
-            sa.UUID(),
-            server_default=sa.text("(uuidv7())"),
-            nullable=False,
-        ),
+        sa.Column("id", sa.UUID(), nullable=False),
         sa.Column(
             "created_at",
             sa.DateTime(timezone=True),
