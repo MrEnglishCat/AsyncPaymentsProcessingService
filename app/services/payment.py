@@ -9,7 +9,11 @@ from ..schemas import (
     PaymentReadSchema,
     PaymentCreateResponseSchema,
 )
-from ..exceptions.exceptions import ConflictItemsException, AppBaseException
+from ..exceptions.exceptions import (
+    ConflictItemsException,
+    AppBaseException,
+    IdempotencyKeyException,
+)
 from ..repository import PaymentRepository, OutboxRepository
 from ..enums.outbox import EventTypeEnum
 
@@ -67,13 +71,18 @@ class PaymentService:
                     logger.warning(
                         f"The Idempotency-Key has already been used with different payment data.\n\tInput payment {payment}"
                     )
-                    raise ConflictItemsException(
+                    raise IdempotencyKeyException(
                         status_code=status.HTTP_409_CONFLICT,
                         detail="The Idempotency-Key has already been used with different payment data.",
                     )
 
                 return PaymentCreateResponseSchema.model_validate(existing_payment)
+            raise ConflictItemsException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail="Please try again. Duplicate identifier records have been detected. The payment has been declined.",
+            )
 
+        except:
             logger.error(
                 f"Unexpected error while creating a payment.\n\tInput payment {payment}\n\tExc:{str(e)}"
             )

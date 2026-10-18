@@ -37,6 +37,8 @@ async def create_payment(
         status_code = status.HTTP_202_ACCEPTED
     elif payment_create.status == PaymentStatusEnum.SUCCEEDED:
         status_code = status.HTTP_200_OK
+    else:
+        status_code = status.HTTP_200_OK
 
     return JSONResponse(
         status_code=status_code,

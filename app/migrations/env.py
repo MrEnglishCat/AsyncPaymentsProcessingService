@@ -1,5 +1,6 @@
 import asyncio
 from logging.config import fileConfig
+import sys
 
 from sqlalchemy import pool
 from sqlalchemy.engine import Connection
@@ -16,6 +17,10 @@ config = context.config
 if config.config_file_name is not None:
     fileConfig(config.config_file_name)
 
+# если на видновс будете запускать без докера, что бы не было ошибок
+if sys.platform == "win32":
+    asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
+
 # add your model's MetaData object here
 # for 'autogenerate' support
 # from myapp import mymodel
@@ -27,7 +32,7 @@ target_metadata = BaseAlchemyModel.metadata
 # my_important_option = config.get_main_option("my_important_option")
 # ... etc.
 # config.set_main_option("sqlalchemy.url", settings.db.DB_URL)
-config.set_main_option("sqlalchemy.url", settings.db.TEST_DB_URL)
+config.set_main_option("sqlalchemy.url", settings.db.DB_URL)
 
 
 def run_migrations_offline() -> None:

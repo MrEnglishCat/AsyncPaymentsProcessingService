@@ -36,7 +36,7 @@ class WebhookService:
             "X-Webhook-Event": "payment.status_changed",
         }
 
-        async_client = self._get_session()
+        async_client = await self._get_session()
 
         for attempt, delay in enumerate(settings.webhook.RETRY_DELAYS, start=1):
             try:

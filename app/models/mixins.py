@@ -13,7 +13,7 @@ class UUIDMixin:
             PG_UUID(as_uuid=True),
             primary_key=True,
             default=uuid7,
-            server_default=text("uuidv7()"),
+            # server_default=text("uuidv7()"), # для ее работы нужно создание в БД такой функции.
             index=True,
         )
 

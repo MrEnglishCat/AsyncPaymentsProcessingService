@@ -33,7 +33,8 @@ class Payment(
             CurrencyEnum,
             name="currency",
             create_type=False,
-            native_enum=True,
+            native_enum=False,
+            length=255,
         )
     )
     description: Mapped[str] = mapped_column(String(500))
@@ -43,7 +44,8 @@ class Payment(
             PaymentStatusEnum,
             name="payments",
             create_type=False,
-            native_enum=True,
+            native_enum=False,
+            length=255,
         ),
         default=PaymentStatusEnum.PENDING,
     )
