@@ -134,7 +134,7 @@ curl -X POST "http://localhost:8000/api/v1/payments/" \
 │   ├── repository/       # Репозитории (Data Access Layer)
 │   ├── schemas/          # Pydantic схемы валидации
 │   ├── services/         # Бизнес-логика (Webhook retry, платежи)
-│   └── utils/         # Бизнес-логика (Webhook retry, платежи)
+│   └── utils/            # Бизнес-логика (Webhook retry, платежи)
 │   
 ├── .env.example          # Шаблон переменных окружения
 ├── .gitignore            # Файл git
