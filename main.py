@@ -7,30 +7,29 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from starlette.middleware.sessions import SessionMiddleware
 
-from app.api.main_router import api_router
+from app.api.api_router import api_router
 from app.config.settings import settings
 from app.dependencies.database import db_helper
 from app.exceptions.handlers import setup_exception_handlers
 from app.config.logging import setup_logging
-from app.broker import broker, setup_broker_routers
-from app.outbox.worker import OutboxWorker
+from app.broker import faststream_app, setup_broker_routers
+from app.outbox.producer import OutboxProducer
 
 logger = logging.getLogger(__name__)
-outbox_worker = OutboxWorker()
+outbox_worker = OutboxProducer()
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     try:
         logger.info("Starting APPS...")
-        logger.info("Starting OutboxWorker...")
-        outbox_task = asyncio.create_task(outbox_worker.start())
-
         logger.info("Starting RabbitMQ broker...")
         setup_broker_routers()
-        await broker.start()
+        await faststream_app.start()
         logger.info("RabbitMQ broker started")
 
+        logger.info("Starting OutboxWorker...")
+        outbox_task = asyncio.create_task(outbox_worker.start())
         yield
         logger.info("Stopping APPS...")
         logger.info("Stopping OutboxWorker...")
@@ -40,7 +39,7 @@ async def lifespan(app: FastAPI):
     finally:
         await db_helper.dispose()
         logger.info("RabbitMQ broker will stopping")
-        await broker.stop()
+        await faststream_app.stop()
 
         logger.info("all services is stop")
 

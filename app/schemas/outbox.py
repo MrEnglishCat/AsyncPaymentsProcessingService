@@ -11,8 +11,4 @@ class OutboxSchema(BaseModel):
     error_message: str | None = Field(max_length=1000)
 
 
-# DEVELOPMENT ???
-class OutboxCreateSchema(OutboxSchema): ...
-
-
 class OutboxReadSchema(IDSchema, OutboxSchema): ...

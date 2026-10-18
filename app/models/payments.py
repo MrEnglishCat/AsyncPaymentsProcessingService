@@ -14,6 +14,7 @@ from sqlalchemy.dialects.postgresql import JSONB
 from ..models.base import BaseAlchemyModel
 from .mixins import UUIDMixin, TimestampMixin
 from ..enums import CurrencyEnum, PaymentStatusEnum
+from ..config.settings import settings
 
 
 class Payment(
@@ -52,4 +53,6 @@ class Payment(
     idempotency_key: Mapped[UUID] = mapped_column(
         SA_UUID(as_uuid=True), default=uuid4, unique=True, index=True
     )
-    webhook_url: Mapped[str] = mapped_column(String(500))
+    webhook_url: Mapped[str] = mapped_column(
+        String(500), default=settings.webhook.WEBHOOK_URL
+    )
