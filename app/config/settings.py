@@ -1,3 +1,5 @@
+from dataclasses import field
+
 from pydantic_settings import SettingsConfigDict, BaseSettings
 from pydantic import BaseModel, PostgresDsn
 
@@ -73,10 +75,10 @@ class RabbitConfig(BaseModel):
         return f"amqp://{self.USERNAME}:{self.PASSWORD}@{self.HOST}:{self.PORT}/"
 
 
-class WebhookConfig:
-    WEBHOOK_TIMEOUT = 5.0
-    RETRY_DELAYS = [2, 4, 8]
-    WEBHOOK_URL = "https://httpbin.org/post"
+class WebhookConfig(BaseModel):
+    WEBHOOK_TIMEOUT: float = 5.0
+    RETRY_DELAYS: list[int] = field(default_factory=lambda: [2, 4, 8])
+    WEBHOOK_URL: str = "https://httpbin.org/post"
 
 
 class ProjectSettings(BaseSettings):
@@ -91,8 +93,8 @@ class ProjectSettings(BaseSettings):
     api: ApiPrefix = ApiPrefix()
     run: RunConfig = RunConfig()
     rabbit: RabbitConfig
-    outbox: OutboxConfig = OutboxConfig()
-    webhook: WebhookConfig = WebhookConfig()
+    outbox: OutboxConfig = field(default_factory=OutboxConfig)
+    webhook: WebhookConfig = field(default_factory=WebhookConfig)
 
     MODE: str
     APP_API_KEY: str
