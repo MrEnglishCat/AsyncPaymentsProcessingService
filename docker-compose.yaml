@@ -1,0 +1,81 @@
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: apps_db
+    environment:
+      POSTGRES_USER: ${db__USERNAME}
+      POSTGRES_PASSWORD: ${db__PASSWORD}
+      POSTGRES_DB: ${db__NAME}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    networks:
+      - apps-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${db__USERNAME} -d ${db__NAME}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: apps-pgadmin
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@admin.com
+      PGADMIN_DEFAULT_PASSWORD: admin
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
+    ports:
+      - "8080:80"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - apps-network
+
+  rabbitmq:
+    image: rabbitmq:4.3.6-management-alpine
+    container_name: payments_rabbitmq
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 10s
+      timeout: 10s
+      retries: 5
+    networks:
+      - apps-network
+
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: payments_api
+    env_file:
+      - .env
+    ports:
+      - "8000:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - apps-network
+
+volumes:
+  postgres_data:
+  pgadmin_data:
+  rabbitmq_data:
+
+networks:
+  apps-network:
+    driver: bridge
