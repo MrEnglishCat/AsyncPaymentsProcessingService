@@ -42,8 +42,7 @@ class DatabaseHelper:
 
 
 db_helper = DatabaseHelper(
-    # url=settings.db.DB_URL,  # DEVELOPMENT  заменить БД на постгрес.
-    url=settings.db.TEST_DB_URL,
+    url=settings.db.DB_URL,  # DEVELOPMENT  заменить БД на постгрес.
     echo=settings.db.echo,
     echo_pool=settings.db.echo_pool,
     pool_size=settings.db.pool_size,
