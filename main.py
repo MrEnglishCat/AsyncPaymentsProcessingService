@@ -1,4 +1,6 @@
 import uvicorn
+import logging
+import asyncio
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
@@ -10,20 +12,45 @@ from app.config.settings import settings
 from app.dependencies.database import db_helper
 from app.exceptions.handlers import setup_exception_handlers
 from app.config.logging import setup_logging
+from app.broker import broker, setup_broker_routers
+from app.outbox.worker import OutboxWorker
+
+logger = logging.getLogger(__name__)
+outbox_worker = OutboxWorker()
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     try:
+        logger.info("Starting APPS...")
+        logger.info("Starting OutboxWorker...")
+        outbox_task = asyncio.create_task(outbox_worker.start())
+
+        logger.info("Starting RabbitMQ broker...")
+        setup_broker_routers()
+        await broker.start()
+        logger.info("RabbitMQ broker started")
 
         yield
+        logger.info("Stopping APPS...")
+        logger.info("Stopping OutboxWorker...")
+        await outbox_worker.stop()
+        outbox_task.cancel()
+
     finally:
         await db_helper.dispose()
+        logger.info("RabbitMQ broker will stopping")
+        await broker.stop()
+
+        logger.info("all services is stop")
 
 
 setup_logging(log_file="./logs/logging.txt")
 
-apps = FastAPI(lifespan=lifespan)
+apps = FastAPI(
+    title="Async Payments Processing Service",
+    lifespan=lifespan,
+)
 apps.add_middleware(
     SessionMiddleware,
     secret_key=settings.SECRET_KEY,

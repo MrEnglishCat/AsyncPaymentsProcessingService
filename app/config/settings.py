@@ -50,7 +50,27 @@ class DatabaseConfig(BaseModel):
         return f"sqlite+aiosqlite:///{self.SQLITE_NAME}"
 
 
-class FastStreamConfig(BaseModel): ...
+class OutboxConfig(BaseModel):
+    POLL_INTERVAL_SECONDS: int = 2
+    BACKET_SIZE: int = 10
+    LOCK_TIMEOUT_SECONDS: int = 30
+    MAX_DELIVERY_ATTEMPTS: int = 3
+    MAX_LENGTH_ERROR_MESSAGE: int = 1000
+
+
+class RabbitConfig(BaseModel):
+    URL: str
+    USERNAME: str
+    PASSWORD: str
+    HOST: str
+    PORT: int
+    exchange: str
+    queue_new: str
+    queue_dlq: str
+
+    @property
+    def url(self):
+        return f"ampq://{self.USERNAME}:{self.PASSWORD}@{self.HOST}:{self.PORT}/"
 
 
 class ProjectSettings(BaseSettings):
@@ -61,10 +81,11 @@ class ProjectSettings(BaseSettings):
         case_sensitive=False,
         env_nested_delimiter="__",
     )
-    faststream: FastStreamConfig = FastStreamConfig()
     db: DatabaseConfig
     api: ApiPrefix = ApiPrefix()
     run: RunConfig = RunConfig()
+    rabbit: RabbitConfig
+    outbox: OutboxConfig = OutboxConfig()
 
     MODE: str
     APP_API_KEY: str
