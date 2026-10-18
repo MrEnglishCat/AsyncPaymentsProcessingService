@@ -26,27 +26,32 @@ class OutboxRepository(BaseRepository[Outbox]):
         self, session: AsyncSession, limit: int, lock_timeout_seconds: int
     ) -> list[Outbox]:
         now = datetime.now(UTC)
-        locked_time = now + timedelta(lock_timeout_seconds)
+        locked_until = now + timedelta(lock_timeout_seconds)
 
         stmt = (
             select(self.model)
             .where(
                 (self.model.status == OutboxStatusEnum.PENDING)
-                | (self.model.status != OutboxStatusEnum.PROCESSING)
-                & (self.model.locked_until < now)
+                | (
+                    (self.model.status == OutboxStatusEnum.PROCESSING)
+                    & (
+                        (self.model.locked_until < now)
+                        | self.model.locked_until.is_(None)
+                    )
+                ),
             )
             .order_by(self.model.created_at)
             .limit(limit)
             .with_for_update(skip_locked=True)
         )
 
-        records = await session.scalars(stmt).all()
+        records = (await session.scalars(stmt)).all()
         if records:
             records_ids = [record.id for record in records]
             stmt = (
                 update(self.model)
                 .where(self.model.id.in_(records_ids))
-                .values(locked_time=locked_time, status=OutboxStatusEnum.PROCESSING)
+                .values(locked_until=locked_until, status=OutboxStatusEnum.PROCESSING)
             )
             await session.execute(stmt)
             await session.flush()

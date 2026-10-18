@@ -70,7 +70,13 @@ class RabbitConfig(BaseModel):
 
     @property
     def url(self):
-        return f"ampq://{self.USERNAME}:{self.PASSWORD}@{self.HOST}:{self.PORT}/"
+        return f"amqp://{self.USERNAME}:{self.PASSWORD}@{self.HOST}:{self.PORT}/"
+
+
+class WebhookConfig:
+    WEBHOOK_TIMEOUT = 5.0
+    RETRY_DELAYS = [2, 4, 8]
+    WEBHOOK_URL = "https://httpbin.org/post"
 
 
 class ProjectSettings(BaseSettings):
@@ -86,6 +92,7 @@ class ProjectSettings(BaseSettings):
     run: RunConfig = RunConfig()
     rabbit: RabbitConfig
     outbox: OutboxConfig = OutboxConfig()
+    webhook: WebhookConfig = WebhookConfig()
 
     MODE: str
     APP_API_KEY: str
